@@ -204,7 +204,6 @@ func writeDBErr(w http.ResponseWriter, err error) {
 func readJSON(r *http.Request, v any) error {
         r.Body = http.MaxBytesReader(nil, r.Body, 1<<20)
         dec := json.NewDecoder(r.Body)
-        dec.DisallowUnknownFields()
         return dec.Decode(v)
 }
 

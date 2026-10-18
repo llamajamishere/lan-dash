@@ -35,8 +35,14 @@ export async function api<T = unknown>(method: string, path: string, body?: unkn
   }
   if (res.status === 204) return undefined as T
   const text = await res.text()
-  const data = text ? JSON.parse(text) : undefined
-  if (!res.ok) throw new ApiError(res.status, data?.error ?? res.statusText)
+  let data: any
+  try {
+    data = text ? JSON.parse(text) : undefined
+  } catch {
+    data = undefined
+  }
+  if (!res.ok) throw new ApiError(res.status, data?.error ?? (text.slice(0, 200) || res.statusText || `HTTP ${res.status}`))
+  if (text && data === undefined) throw new ApiError(res.status, 'Unexpected non-JSON response from server')
   return data as T
 }
 

@@ -123,10 +123,14 @@ export function Modal({ title, onClose, children, wide }: { title: string; onClo
     return () => window.removeEventListener('keydown', h)
   }, [onClose])
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 sm:items-center"
+      onClick={(e) => {
+        // Close only on a genuine backdrop click, never on clicks bubbling up from the dialog.
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
       <div
         className={`card w-full ${wide ? 'max-w-3xl' : 'max-w-lg'} bg-slate-900`}
-        onMouseDown={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
