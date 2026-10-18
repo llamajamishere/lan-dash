@@ -1,0 +1,54 @@
+[Unit]
+Description=LAN Dash - self-hosted LAN monitoring dashboard
+Documentation=file:///opt/lan-dash/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=landash
+Group=landash
+# Defaults; override LANDASH_LISTEN / LANDASH_OPTS (e.g. "-log-level debug")
+# in /etc/default/lan-dash.
+Environment=LANDASH_LISTEN=:8080
+Environment=LANDASH_OPTS=
+EnvironmentFile=-/etc/default/lan-dash
+ExecStart=/usr/local/bin/lan-dash -listen ${LANDASH_LISTEN} -db /var/lib/lan-dash/landash.db -key /etc/lan-dash/master.key $LANDASH_OPTS
+Restart=on-failure
+RestartSec=5s
+
+# ICMP ping checks (phase 4) need raw sockets without running as root.
+AmbientCapabilities=CAP_NET_RAW
+CapabilityBoundingSet=CAP_NET_RAW
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+StateDirectory=lan-dash
+StateDirectoryMode=0750
+ReadWritePaths=/var/lib/lan-dash
+ReadOnlyPaths=/etc/lan-dash
+UMask=0077
+
+# Logs go to journald: journalctl -u lan-dash -f
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=lan-dash
+
+[Install]
+WantedBy=multi-user.target
